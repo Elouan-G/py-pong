@@ -16,7 +16,7 @@ left_paddle = Paddle(screen.get_width(), screen.get_height(), "left")
 right_paddle = Paddle(screen.get_width(), screen.get_height(), "right")
 
 # ball setup
-ball_speed = 200
+ball_speed = 300
 ball = Ball(screen.get_width(), screen.get_height(), left_paddle, right_paddle)
 
 # main game loop
