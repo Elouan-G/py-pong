@@ -9,7 +9,7 @@ class Paddle:
             raise ValueError("Paddle position must be 'left' or 'right'")
         self.color = (255, 0, 0) if position == "left" else (0, 0, 255)
 
-        x_pos = screen_width / 7 if position == "left" else screen_width * 6 / 7
+        x_pos = screen_width / 7 if position == "left" else screen_width * 6 / 7 - width
         y_pos = screen_height / 2 - height / 2
         self.rect = Rect(x_pos, y_pos, width, height)
 
