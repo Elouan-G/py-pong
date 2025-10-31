@@ -1,5 +1,7 @@
 import pygame
 
+from source.paddle import Paddle
+
 # pygame's setup
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -10,17 +12,11 @@ dt = 0
 # paddles setup
 paddle_width = 20
 paddle_height = 60
-paddle_left = pygame.Rect(
-    screen.get_width() / 7 - paddle_width / 2,
-    screen.get_height() / 2 - paddle_height / 2,
-    paddle_width,
-    paddle_height,
+left_paddle = Paddle(
+    screen.get_width(), screen.get_height(), "left", paddle_width, paddle_height
 )
-paddle_right = pygame.Rect(
-    screen.get_width() / 7 * 6 - paddle_width / 2,
-    screen.get_height() / 2 - paddle_height / 2,
-    paddle_width,
-    paddle_height,
+right_paddle = Paddle(
+    screen.get_width(), screen.get_height(), "right", paddle_width, paddle_height
 )
 
 while running:
@@ -33,18 +29,18 @@ while running:
     # fills the screen to reset the frame
     screen.fill("black")
 
-    pygame.draw.rect(screen, "red", paddle_left)
-    pygame.draw.rect(screen, "blue", paddle_right)
+    pygame.draw.rect(screen, left_paddle.color, left_paddle.rect)
+    pygame.draw.rect(screen, right_paddle.color, right_paddle.rect)
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_z]:
-        paddle_left.move_ip(0, -300 * dt)
+        left_paddle.move(-300 * dt)
     if keys[pygame.K_s]:
-        paddle_left.move_ip(0, 300 * dt)
+        left_paddle.move(300 * dt)
     if keys[pygame.K_UP]:
-        paddle_right.move_ip(0, -300 * dt)
+        right_paddle.move(-300 * dt)
     if keys[pygame.K_DOWN]:
-        paddle_right.move_ip(0, 300 * dt)
+        right_paddle.move(300 * dt)
 
     # updates display
     pygame.display.flip()
