@@ -12,36 +12,53 @@ class Ball:
         self.y_pos = screen_height / 2
         self.direction = [1, 1]
 
-    def move(self, d):
-        next_x = self.x_pos + self.direction[0] * d
-        next_y = self.y_pos + self.direction[1] * d
+    def move(self, dist):
+        dist = self.__bounce_and_reset(dist)
+        self.x_pos += self.direction[0] * dist
+        self.y_pos += self.direction[1] * dist
 
-        # Bounces off top and bottom
-        if next_y - self.radius < 0 or next_y + self.radius > self.screen_height:
+    def __bounce_and_reset(self, dist) -> float:
+        """If ball needs to bounce or reset, updates direction vector and returns the distance left to travel after the bounce/reset."""
+        next_x = self.x_pos + self.direction[0] * dist
+        next_y = self.y_pos + self.direction[1] * dist
+
+        # Bounce off top
+        if next_y - self.radius < 0:
             self.direction[1] *= -1
+            dist -= abs(next_y - self.radius)
+            return dist if dist > 0 else 0
+
+        # Bounce off bottom
+        if next_y + self.radius > self.screen_height:
+            self.direction[1] *= -1
+            dist -= abs(next_y + self.radius - self.screen_height)
+            return dist if dist > 0 else 0
+
+        # Reset on left or right border
+        if next_x - self.radius < 0 or next_x + self.radius > self.screen_width:
+            self.x_pos = self.screen_width / 2
+            self.y_pos = self.screen_height / 2
+            return 0
 
         # Bounces off left paddle
-        elif (
+        if (
             next_x - self.radius < self.__left_paddle.rect.right
             and next_y + self.radius > self.__left_paddle.rect.top
             and next_y - self.radius < self.__left_paddle.rect.bottom
         ):
             self.direction[0] *= -1
+            dist -= abs(next_x - self.radius - self.__left_paddle.rect.right)
+            return dist if dist > 0 else 0
 
         # Bounces off right paddle
-        elif (
+        if (
             next_x + self.radius > self.__right_paddle.rect.left
             and next_y + self.radius > self.__right_paddle.rect.top
             and next_y - self.radius < self.__right_paddle.rect.bottom
         ):
             self.direction[0] *= -1
+            dist -= abs(next_x + self.radius - self.__right_paddle.rect.left)
+            return dist if dist > 0 else 0
 
-        # Updates position with direction changes
-        self.x_pos += self.direction[0] * d
-        self.y_pos += self.direction[1] * d
-
-        # Resets we if out of bounds (left or right)
-        if self.x_pos - self.radius < 0 or self.x_pos + self.radius > self.screen_width:
-            self.x_pos = self.screen_width / 2
-            self.y_pos = self.screen_height / 2
-            self.direction = [1, 1]
+        # No bounce or reset needed
+        return dist
