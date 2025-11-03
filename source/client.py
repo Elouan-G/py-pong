@@ -13,7 +13,7 @@ class PongClient:
         while self.running:
             if self.websocket:
                 ping_msg = {"type": "ping"}
-                await websockets.send(json.dumps(ping_msg))
+                await self.websocket.send(json.dumps(ping_msg))
                 print(f"Sent: {ping_msg}")
                 await asyncio.sleep(10)
             else:
@@ -24,7 +24,7 @@ class PongClient:
         msg_type = data.get("type")
         if msg_type == "ping":
             pong_msg = {"type": "pong"}
-            await websockets.send(json.dumps(pong_msg))
+            await self.websocket.send(json.dumps(pong_msg))
             print(f"Sent: {pong_msg}")
 
     async def listen(self):
