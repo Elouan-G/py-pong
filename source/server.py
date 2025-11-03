@@ -7,17 +7,17 @@ class PongServer:
     def __init__(self):
         self.players = set()
 
-    async def handler(self, websocket):
+    async def handle_ws_connection(self, websocket):
         self.players.add(websocket)
-        print("New player connected!")
+        print(f"New player connected: {websocket.remote_address}")
 
         try:
             async for message in websocket:
                 data = json.loads(message)
-                print("Received:", data)
+                print(f"Received: {data}")
                 await self.handle_message(websocket, data)
         except websockets.ConnectionClosed:
-            print("Player disconnected")
+            print(f"Player disconnected: {websocket.remote_address}")
         finally:
             self.players.remove(websocket)
 
@@ -41,10 +41,14 @@ class PongServer:
                 await asyncio.sleep(5)
 
     async def run(self):
-        async with websockets.serve(self.handler, "localhost", 5739):
-            await self.ping_pong()
+        await self.ping_pong()
+
+    async def start(self):
+        async with websockets.serve(self.handle_ws_connection, "localhost", 5739):
+            print("Server running on ws://localhost:5739")
+            await self.run()
 
 
 if __name__ == "__main__":
     server = PongServer()
-    asyncio.run(server.run())
+    asyncio.run(server.start())
