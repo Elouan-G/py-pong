@@ -1,6 +1,7 @@
 import asyncio
 import json
 import websockets
+from source.pong_client import PongClient
 
 
 class Client:
@@ -42,10 +43,13 @@ class Client:
 
     async def run(self):
         """Main client routine."""
-        while self.running:
-            listen = asyncio.create_task(self.listen())
-            asyncio.create_task(self.ping_pong())
-            await listen
+        asyncio.create_task(self.ping_pong())
+        asyncio.create_task(self.listen())
+        game = PongClient()
+        await game.start()
+        self.running = False
+        stop_msg = {"type": "stop"}
+        await self.websocket.send(json.dumps(stop_msg))
 
     async def connect(self):
         """Connect to the WebSocket server."""

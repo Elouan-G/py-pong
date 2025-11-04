@@ -18,9 +18,10 @@ class Server:
                 print(f"Received: {data}")
                 await self.handle_message(websocket, data)
         except websockets.ConnectionClosed:
-            print(f"Player disconnected: {websocket.remote_address}")
+            pass
         finally:
             self.players.remove(websocket)
+            print(f"Player disconnected: {websocket.remote_address}")
 
     async def handle_message(self, websocket: websockets, data: json):
         """Handle messages received from the client."""
@@ -29,6 +30,8 @@ class Server:
             pong_msg = {"type": "pong"}
             await websocket.send(json.dumps(pong_msg))
             print(f"Sent: {pong_msg}")
+        if msg_type == "stop":
+            await websocket.close()
 
     async def ping_pong(self):
         while True:
