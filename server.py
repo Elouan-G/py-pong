@@ -8,6 +8,14 @@ class Server:
     def __init__(self):
         self.players = set()
 
+    async def update_handler(self, game_state: dict):
+        """Sends the current game state to all connected players."""
+        game_state_msg = {"type": "state", "state": game_state}
+        if self.players:
+            for player in self.players:
+                await player.send(json.dumps(game_state_msg))
+                print(f"Sent to {player.remote_address}: {game_state_msg}")
+
     async def handle_ws_connection(self, websocket):
         self.players.add(websocket)
         print(f"New player connected: {websocket.remote_address}")
@@ -45,7 +53,8 @@ class Server:
                 await asyncio.sleep(5)
 
     async def run(self):
-        asyncio.create_task(self.ping_pong())
+        """Main server routine."""
+        # asyncio.create_task(self.ping_pong())
         game = PongServer()
         await game.start()
         await self.stop()
@@ -60,6 +69,7 @@ class Server:
         for ws in self.players:
             stop_msg = {"type": "stop"}
             await ws.send(json.dumps(stop_msg))
+            print(f"Sent: {stop_msg}")
         print("Server stopped.")
 
 

@@ -8,13 +8,15 @@ from source.ball import Ball
 class PongServer:
     """Run's a pong game with pygame."""
 
-    def __init__(self):
+    def __init__(self, update_handler):
         """Initialises pygame and game variables."""
         pygame.init()
         self.screen = pygame.display.set_mode((1280, 720))
         self.clock = pygame.time.Clock()
         self.running = True
         self.dt = 0
+
+        self.update_handler = update_handler
 
     async def start(self):
         """Initialises a game and starts the main game loop."""
@@ -36,6 +38,9 @@ class PongServer:
             self.right_paddle,
         )
 
+        # screen setup
+        self.bg_color = "black"
+
         await self.run()
 
     async def run(self):
@@ -47,20 +52,7 @@ class PongServer:
                 if event.type == pygame.QUIT:
                     self.running = False
 
-            # fills the screen to reset the frame
-            self.screen.fill("black")
-
-            pygame.draw.rect(self.screen, self.left_paddle.color, self.left_paddle.rect)
-            pygame.draw.rect(
-                self.screen, self.right_paddle.color, self.right_paddle.rect
-            )
-            pygame.draw.circle(
-                self.screen,
-                self.ball.color,
-                (self.ball.x_pos, self.ball.y_pos),
-                self.ball.radius,
-            )
-
+            # Move objects depending on imput
             keys = pygame.key.get_pressed()
             if keys[pygame.K_z]:
                 self.left_paddle.move(-self.paddle_speed * self.dt)
@@ -74,12 +66,39 @@ class PongServer:
             self.ball.move(self.ball_speed * self.dt)
 
             # updates display
+            self.screen.fill(self.bg_color)
+
+            pygame.draw.rect(self.screen, self.left_paddle.color, self.left_paddle.rect)
+            pygame.draw.rect(
+                self.screen, self.right_paddle.color, self.right_paddle.rect
+            )
+            pygame.draw.circle(
+                self.screen,
+                self.ball.color,
+                (self.ball.x_pos, self.ball.y_pos),
+                self.ball.radius,
+            )
+
             pygame.display.flip()
+
+            # update client
+            game_state = {
+                "left_paddle": self.left_paddle.get_json(),
+                "right_paddle": self.right_paddle.get_json(),
+                "ball": self.ball.get_json(),
+                "screen": {
+                    "width": self.screen.get_width(),
+                    "height": self.screen.get_height(),
+                    "bg_color": self.bg_color,
+                },
+            }
+            await self.update_handler(game_state)
 
             # limits FPS to 60 (dt is delta time in seconds since last frame)
             # dt allows frame-independent movement speed
             await asyncio.sleep(1 / 120)
             self.dt = self.clock.tick(60) / 1000
+            print(self.dt)
 
     def stop(self):
         """Stops the game and quits pygame."""
