@@ -45,11 +45,19 @@ class Server:
         asyncio.create_task(self.ping_pong())
         game = PongServer()
         await game.start()
+        await self.stop()
 
     async def start(self):
         async with websockets.serve(self.handle_ws_connection, "localhost", 5739):
             print("Server running on ws://localhost:5739")
             await self.run()
+
+    async def stop(self):
+        print("Server stopping...")
+        for ws in self.players:
+            stop_msg = {"type": "stop"}
+            await ws.send(json.dumps(stop_msg))
+        print("Server stopped.")
 
 
 if __name__ == "__main__":

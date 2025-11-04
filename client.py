@@ -26,6 +26,8 @@ class Client:
             pong_msg = {"type": "pong"}
             await self.websocket.send(json.dumps(pong_msg))
             print(f"Sent: {pong_msg}")
+        if msg_type == "stop":
+            self.running = False
 
     async def listen(self):
         """Listen for messages from the server."""
@@ -65,6 +67,8 @@ class Client:
             else:
                 self.running = True
                 await self.run()
+                print("Client stopped.")
+                return
 
 
 if __name__ == "__main__":
