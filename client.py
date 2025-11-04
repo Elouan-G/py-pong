@@ -3,7 +3,7 @@ import json
 import websockets
 
 
-class PongClient:
+class Client:
     def __init__(self, uri: str):
         self.uri = uri
         self.websocket = None
@@ -68,5 +68,5 @@ class PongClient:
 
 
 if __name__ == "__main__":
-    client = PongClient("ws://localhost:5739")
+    client = Client("ws://localhost:5739")
     asyncio.run(client.start())

@@ -1,9 +1,10 @@
 import asyncio
 import json
 import websockets
+from source.pong_server import PongServer
 
 
-class PongServer:
+class Server:
     def __init__(self):
         self.players = set()
 
@@ -41,7 +42,9 @@ class PongServer:
                 await asyncio.sleep(5)
 
     async def run(self):
-        await self.ping_pong()
+        asyncio.create_task(self.ping_pong())
+        game = PongServer()
+        await game.start()
 
     async def start(self):
         async with websockets.serve(self.handle_ws_connection, "localhost", 5739):
@@ -50,5 +53,5 @@ class PongServer:
 
 
 if __name__ == "__main__":
-    server = PongServer()
+    server = Server()
     asyncio.run(server.start())
