@@ -1,5 +1,6 @@
 import pygame
-import asyncio
+import websockets
+import json
 
 from source.paddle import Paddle
 from source.ball import Ball
@@ -8,13 +9,14 @@ from source.ball import Ball
 class PongClient:
     """Run's a pong client with pygame."""
 
-    def __init__(self):
+    def __init__(self, ws: websockets):
         """Initialises pygame and game variables."""
         pygame.init()
         self.screen = pygame.display.set_mode((1280, 720))
         self.clock = pygame.time.Clock()
         self.running = True
         self.dt = 0
+        self.websocket = ws
 
     async def start(self):
         """Initialises a game and starts the main game loop."""
@@ -37,49 +39,63 @@ class PongClient:
         )
 
         await self.run()
+        self.stop()
+
+    async def handle_message(self, data: dict):
+        """Handle messages received from the server."""
+        msg_type = data.get("type")
+        if msg_type == "ping":
+            pong_msg = {"type": "pong"}
+            await self.websocket.send(json.dumps(pong_msg))
+            print(f"Sent: {pong_msg}")
+        if msg_type == "stop":
+            self.running = False
+        if msg_type == "state":
+            pass
 
     async def run(self):
         """Main game loop."""
         while self.running:
-            # polls for events
-            for event in pygame.event.get():
-                # window's X button pressed
-                if event.type == pygame.QUIT:
-                    self.running = False
+            try:
+                async for message in self.websocket:
+                    data = json.loads(message)
+                    print(f"Received: {data}")
+                    if data.get("type") != "state":
+                        await self.handle_message(data)
+                    else:
+                        # polls for events
+                        for event in pygame.event.get():
+                            # window's X button pressed
+                            if event.type == pygame.QUIT:
+                                self.running = False
+                                return
 
-            # fills the screen to reset the frame
-            self.screen.fill("black")
+                        # update game with received state
+                        data = data["state"]
+                        self.screen.fill(data["screen"]["bg_color"])
+                        self.left_paddle.set_json(data["left_paddle"])
+                        self.right_paddle.set_json(data["right_paddle"])
+                        self.ball.set_json(data["ball"])
 
-            pygame.draw.rect(self.screen, self.left_paddle.color, self.left_paddle.rect)
-            pygame.draw.rect(
-                self.screen, self.right_paddle.color, self.right_paddle.rect
-            )
-            pygame.draw.circle(
-                self.screen,
-                self.ball.color,
-                (self.ball.x_pos, self.ball.y_pos),
-                self.ball.radius,
-            )
+                        pygame.draw.rect(
+                            self.screen, self.left_paddle.color, self.left_paddle.rect
+                        )
+                        pygame.draw.rect(
+                            self.screen, self.right_paddle.color, self.right_paddle.rect
+                        )
+                        pygame.draw.circle(
+                            self.screen,
+                            self.ball.color,
+                            (self.ball.x_pos, self.ball.y_pos),
+                            self.ball.radius,
+                        )
 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_z]:
-                self.left_paddle.move(-self.paddle_speed * self.dt)
-            if keys[pygame.K_s]:
-                self.left_paddle.move(self.paddle_speed * self.dt)
-            if keys[pygame.K_UP]:
-                self.right_paddle.move(-self.paddle_speed * self.dt)
-            if keys[pygame.K_DOWN]:
-                self.right_paddle.move(self.paddle_speed * self.dt)
+                        # update display
+                        pygame.display.flip()
 
-            self.ball.move(self.ball_speed * self.dt)
-
-            # updates display
-            pygame.display.flip()
-
-            # limits FPS to 60 (dt is delta time in seconds since last frame)
-            # dt allows frame-independent movement speed
-            await asyncio.sleep(1 / 120)
-            self.dt = self.clock.tick(60) / 1000
+            except websockets.ConnectionClosed:
+                print("Connection closed by server.")
+                self.running = False
 
     def stop(self):
         """Stops the game and quits pygame."""

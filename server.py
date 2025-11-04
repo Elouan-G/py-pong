@@ -55,7 +55,7 @@ class Server:
     async def run(self):
         """Main server routine."""
         # asyncio.create_task(self.ping_pong())
-        game = PongServer()
+        game = PongServer(self.update_handler)
         await game.start()
         await self.stop()
 

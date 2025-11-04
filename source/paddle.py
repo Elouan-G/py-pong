@@ -29,3 +29,10 @@ class Paddle:
             "height": self.rect.height,
             "color": self.color,
         }
+
+    def set_json(self, json):
+        self.rect.x = json["x"]
+        self.rect.y = json["y"]
+        self.rect.width = json["width"]
+        self.rect.height = json["height"]
+        self.color = tuple(json["color"])

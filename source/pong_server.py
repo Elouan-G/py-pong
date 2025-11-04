@@ -42,6 +42,7 @@ class PongServer:
         self.bg_color = "black"
 
         await self.run()
+        self.stop()
 
     async def run(self):
         """Main game loop."""
@@ -96,9 +97,8 @@ class PongServer:
 
             # limits FPS to 60 (dt is delta time in seconds since last frame)
             # dt allows frame-independent movement speed
-            await asyncio.sleep(1 / 120)
+            await asyncio.sleep(1 / 60)
             self.dt = self.clock.tick(60) / 1000
-            print(self.dt)
 
     def stop(self):
         """Stops the game and quits pygame."""

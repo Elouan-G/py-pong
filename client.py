@@ -29,6 +29,8 @@ class Client:
             print(f"Sent: {pong_msg}")
         if msg_type == "stop":
             self.running = False
+        if msg_type == "state":
+            pass
 
     async def listen(self):
         """Listen for messages from the server."""
@@ -43,13 +45,14 @@ class Client:
 
     async def run(self):
         """Main client routine."""
-        asyncio.create_task(self.ping_pong())
-        asyncio.create_task(self.listen())
-        game = PongClient()
+        # asyncio.create_task(self.ping_pong())
+        # asyncio.create_task(self.listen())
+        game = PongClient(self.websocket)
         await game.start()
         self.running = False
         stop_msg = {"type": "stop"}
         await self.websocket.send(json.dumps(stop_msg))
+        print(f"Sent: {stop_msg}")
 
     async def connect(self):
         """Connect to the WebSocket server."""
