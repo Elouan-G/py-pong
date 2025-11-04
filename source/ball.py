@@ -66,3 +66,17 @@ class Ball:
 
         # No bounce or reset needed
         return dist
+
+    def get_json(self):
+        return {
+            "x_pos": self.x_pos,
+            "y_pos": self.y_pos,
+            "radius": self.radius,
+            "color": self.color,
+        }
+
+    def set_json(self, json):
+        self.x_pos = json["x_pos"]
+        self.y_pos = json["y_pos"]
+        self.radius = json["radius"]
+        self.color = json["color"]
