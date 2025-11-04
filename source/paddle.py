@@ -20,3 +20,12 @@ class Paddle:
             self.rect.y = self.screen_height - self.rect.height
         else:
             self.rect.move_ip(0, dy)
+
+    def get_json(self):
+        return {
+            "x": self.rect.x,
+            "y": self.rect.y,
+            "width": self.rect.width,
+            "height": self.rect.height,
+            "color": self.color,
+        }
